@@ -7,6 +7,8 @@ var lazypipe = require('lazypipe');
 var rimraf = require('rimraf');
 var wiredep = require('wiredep').stream;
 var runSequence = require('run-sequence');
+var rev = require('gulp-rev');
+var revCollector = require('gulp-rev-collector');
 
 var yeoman = {
   app: require('./bower.json').appPath || 'app',
@@ -20,6 +22,7 @@ var paths = {
     main: yeoman.app + '/index.html',
     files: [yeoman.app + '/views/**/*.html']
   },
+  images:[yeoman.app + '/images/**/*']
 };
 
 ////////////////////////
@@ -113,12 +116,19 @@ gulp.task('plugin', function() {
 ///////////
 // Build //
 ///////////
+gulp.task('revImg', function(){
+    return gulp.src(paths.images)
+        .pipe($.rev())
+        .pipe(gulp.dest(yeoman.dist + '/images'))
+        .pipe(rev.manifest())
+        .pipe(gulp.dest(yeoman.app +'/rev/img'));
+});
 
 gulp.task('clean:dist', function (cb) {
   rimraf('./dist', cb);
 });
 
-gulp.task('client:build', ['html', 'styles'], function () {
+gulp.task('client:build', ['html', 'revCollectorCss'], function () {
   var jsFilter = $.filter('**/*.js');
   var cssFilter = $.filter('**/*.css');
 
@@ -138,10 +148,23 @@ gulp.task('client:build', ['html', 'styles'], function () {
     .pipe(gulp.dest(yeoman.dist));
 });
 
+// gulp.task('html', function () {
+//   return gulp.src(yeoman.app + '/views/**/*')
+//    // .pipe($.minifyHtml({conditionals: true, loose: false}))
+//     .pipe(gulp.dest(yeoman.dist + '/views'));
+// });
+
 gulp.task('html', function () {
-  return gulp.src(yeoman.app + '/views/**/*')
+  return gulp.src(['app/rev/**/*.json', yeoman.app + '/views/**/*'])
+        .pipe(revCollector())
    // .pipe($.minifyHtml({conditionals: true, loose: false}))
     .pipe(gulp.dest(yeoman.dist + '/views'));
+});
+
+gulp.task('revCollectorCss', function () {
+    return gulp.src(['app/rev/**/*.json', yeoman.app + '/styles/*'])
+        .pipe(revCollector())
+        .pipe(styles());
 });
 
 gulp.task('images', function () {
@@ -166,6 +189,14 @@ gulp.task('copy:fonts', function () {
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
 });
 
+gulp.task('copy:bower', function () {
+  return gulp.src('./bower_components/moment/**/*').pipe(gulp.dest(yeoman.dist + '/bower_components/monent'));
+});
+
+// gulp.task('build', ['clean:dist'], function () {
+//   runSequence(['images', 'copy:extras','copy:fonts', 'client:build']);
+// });
+
 gulp.task('build', ['clean:dist'], function () {
-  runSequence(['images', 'copy:extras','copy:fonts', 'client:build']);
+  runSequence(['revImg', 'copy:extras','copy:fonts', 'copy:bower','client:build']);
 });
