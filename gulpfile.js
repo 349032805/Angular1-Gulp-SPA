@@ -99,6 +99,7 @@ gulp.task('serve', ['plugin'],function (cb) {
     'watch', cb);
 });
 
+
 // inject bower components
 gulp.task('bower', function () {
   return gulp.src(paths.views.main)
@@ -185,12 +186,13 @@ gulp.task('copy:extras', function () {
 });
 
 gulp.task('copy:fonts', function () {
-  return gulp.src(yeoman.app + '/fonts/**/*')
+  return gulp.src(yeoman.app + '/bower_components/bootstrap-sass-official/assets/fonts/bootstrap/**/*')
     .pipe(gulp.dest(yeoman.dist + '/fonts'));
 });
 
-gulp.task('copy:bower', function () {
-  return gulp.src('./bower_components/moment/**/*').pipe(gulp.dest(yeoman.dist + '/bower_components/monent'));
+gulp.task('copy:plugins', function () {
+  return gulp.src(yeoman.app + '/plugins/**/*')
+  .pipe(gulp.dest(yeoman.dist + '/plugins'));
 });
 
 // gulp.task('build', ['clean:dist'], function () {
@@ -198,5 +200,5 @@ gulp.task('copy:bower', function () {
 // });
 
 gulp.task('build', ['clean:dist'], function () {
-  runSequence(['revImg', 'copy:extras','copy:fonts', 'copy:bower','client:build']);
+  runSequence(['revImg', 'copy:extras','copy:fonts', 'copy:plugins','client:build']);
 });
