@@ -10,8 +10,8 @@
  */
 angular
   .module('fantasyadminApp', [
-    'ngResource',
     'ui.router',
+    'ui.bootstrap',
     'ngMessages'
   ])
   .config(function ($stateProvider, $urlRouterProvider) {
